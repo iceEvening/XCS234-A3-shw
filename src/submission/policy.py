@@ -130,9 +130,8 @@ class GaussianPolicy(BasePolicy, nn.Module):
         self.device = device
         ### START CODE HERE ###
 
-        initial_log_std = torch.zeros(action_dim, dtype=torch.float32)
+        initial_log_std = torch.zeros(action_dim, dtype=torch.float32, device=self.device)
         self.log_std = nn.Parameter(initial_log_std)
-        self.log_std.to(self.device)
 
         ### END CODE HERE ###
 
@@ -178,6 +177,14 @@ class GaussianPolicy(BasePolicy, nn.Module):
         std_dev = self.std()
         scale_tril = torch.diag(std_dev)
         distribution = ptd.MultivariateNormal(loc=mean, scale_tril=scale_tril)
+
+        class DistributionWrapper(ptd.MultivariateNormal):
+            def log_prob(self, value):
+                if value.device != mean.device:
+                    value = value.to(mean.device)
+                return super().log_prob(value)
+
+        distribution = DistributionWrapper(mean, scale_tril=scale_tril)
         
         ### END CODE HERE ###
         return distribution
