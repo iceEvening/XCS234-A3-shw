@@ -67,6 +67,10 @@ class BaselineNetwork(nn.Module):
             (which will be returned).
         """
         ### START CODE HERE ###
+
+        network_output = self.network(observations)
+        output = network_output.squeeze(1)
+
         ### END CODE HERE ###
         assert output.ndim == 1
         return output
@@ -99,6 +103,15 @@ class BaselineNetwork(nn.Module):
         """
         observations = np2torch(observations, device=self.device)
         ### START CODE HERE ###
+
+        self.network.eval()
+        with torch.no_grad():
+            predicted_values = self.forward(observations)
+
+        predicted_values_numpy = predicted_values.cpu().numpy()
+        advantages = returns - predicted_values_numpy
+        self.network.train()
+
         ### END CODE HERE ###
         return advantages
 
@@ -118,4 +131,12 @@ class BaselineNetwork(nn.Module):
         returns = np2torch(returns, device=self.device)
         observations = np2torch(observations, device=self.device)
         ### START CODE HERE ###
+
+        self.network.train()
+        predicted_values = self.forward(observations)
+        loss = nn.MSELoss()(predicted_values, returns)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
         ### END CODE HERE ###
