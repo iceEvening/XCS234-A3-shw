@@ -41,7 +41,7 @@ class BaselineNetwork(nn.Module):
         output_size = 1
 
         n_layers = self.config["hyper_params"]["n_layers"]
-        size = self.config["hyper_params"]["size"]
+        size = self.config["hyper_params"]["layer_size"]
 
         self.network = build_mlp(input_size, output_size, n_layers, size)
         self.network.to(self.device)
@@ -138,5 +138,5 @@ class BaselineNetwork(nn.Module):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        
+
         ### END CODE HERE ###

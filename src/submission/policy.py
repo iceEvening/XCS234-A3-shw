@@ -63,6 +63,12 @@ class BasePolicy(ABC):
         """
         observations = np2torch(observations, device=self.device)
         ### START CODE HERE ###
+
+        with torch.no_grad():
+            distribution = self.action_distribution(observations)
+            sampled_actions_tensor = distribution.sample()
+            sampled_actions = sampled_actions_tensor.cpu().numpy()
+
         ### END CODE HERE ###
         return sampled_actions
 
@@ -89,6 +95,11 @@ class CategoricalPolicy(BasePolicy, nn.Module):
             categorical distributions in Pytorch
         """
         ### START CODE HERE ###
+
+        observations = observations.to(self.device)
+        logits = self.network(observations)
+        distribution = ptd.Categorical(logits=logits)
+
         ### END CODE HERE ###
         return distribution
 
@@ -118,6 +129,11 @@ class GaussianPolicy(BasePolicy, nn.Module):
         self.network = network
         self.device = device
         ### START CODE HERE ###
+
+        initial_log_std = torch.zeros(action_dim, dtype=torch.float32)
+        self.log_std = nn.Parameter(initial_log_std)
+        self.log_std.to(self.device)
+
         ### END CODE HERE ###
 
     def std(self):
@@ -130,6 +146,9 @@ class GaussianPolicy(BasePolicy, nn.Module):
             It can be computed from self.log_std
         """
         ### START CODE HERE ###
+
+        std = torch.exp(self.log_std)
+
         ### END CODE HERE ###
         return std
 
@@ -153,5 +172,12 @@ class GaussianPolicy(BasePolicy, nn.Module):
             https://pytorch.org/docs/stable/distributions.html
         """
         ### START CODE HERE ###
+
+        observations = observations.to(self.device)
+        mean = self.network(observations)
+        std_dev = self.std()
+        scale_tril = torch.diag(std_dev)
+        distribution = ptd.MultivariateNormal(loc=mean, scale_tril=scale_tril)
+        
         ### END CODE HERE ###
         return distribution
