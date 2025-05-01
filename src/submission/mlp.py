@@ -37,4 +37,22 @@ def build_mlp(input_size, output_size, n_layers, size):
             model = nn.Sequential(*modules)
     """
     ### START CODE HERE ###
+
+    modules = []
+
+    if n_layers == 0:
+        modules.append(nn.Linear(input_size, output_size))
+    else:
+        modules.append(nn.Linear(input_size, size))
+        modules.append(nn.ReLU())
+
+        for _ in range(n_layers - 1):
+            modules.append(nn.Linear(size, size))
+            modules.append(nn.ReLU())
+
+        modules.append(nn.Linear(size, output_size))
+    
+    model = nn.Sequential(*modules)
+    return model
+
     ### END CODE HERE ###

@@ -34,6 +34,18 @@ class BaselineNetwork(nn.Module):
                 self.device = torch.device("mps")
         print(f"Running Baseline model on device {self.device}")
         ### START CODE HERE ###
+
+        obs_shape = self.env.observation_space.shape
+        assert len(obs_shape) == 1
+        input_size = obs_shape[0]
+        output_size = 1
+
+        n_layers = self.config["hyper_params"]["n_layers"]
+        size = self.config["hyper_params"]["size"]
+
+        self.network = build_mlp(input_size, output_size, n_layers, size)
+        self.network.to(self.device)
+        self.optimizer = torch.optim.Adam(self.network.parameters(), lr=self.lr)
         ### END CODE HERE ###
 
     def forward(self, observations):
